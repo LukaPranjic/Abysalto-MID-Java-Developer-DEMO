@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: java.mid
+  datasource:
+    driver-class-name: org.h2.Driver
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
