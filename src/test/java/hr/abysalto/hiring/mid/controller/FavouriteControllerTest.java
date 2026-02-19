@@ -23,7 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class FavouriteControllerTest extends AbysaltoTestAbstract {
 
-    private ProductDto sampleProduct;
+    private static final ProductDto SAMPLE_PRODUCT = ProductDto.builder()
+            .id(1L)
+            .title("iPhone 15")
+            .description("Latest Apple smartphone")
+            .category("smartphones")
+            .price(999.99)
+            .brand("Apple")
+            .build();
+
+    private static final RegisterRequest REGISTER_REQUEST = RegisterRequest.builder()
+            .username("testuser")
+            .email("testuser@example.com")
+            .password("password123")
+            .build();
+
     private Long testUserId;
 
     @BeforeEach
@@ -31,29 +45,14 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
     protected void setUp() {
         super.setUp();
 
-        RegisterRequest registerRequest = RegisterRequest.builder()
-                .username("testuser")
-                .email("testuser@example.com")
-                .password("password123")
-                .build();
-
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
+                        .content(objectMapper.writeValueAsString(REGISTER_REQUEST)))
                 .andExpect(status().isCreated());
 
         testUserId = userRepository.findByUsername("testuser")
                 .orElseThrow(() -> new RuntimeException("Test user not found"))
                 .getId();
-
-        sampleProduct = ProductDto.builder()
-                .id(1L)
-                .title("iPhone 15")
-                .description("Latest Apple smartphone")
-                .category("smartphones")
-                .price(999.99)
-                .brand("Apple")
-                .build();
     }
 
     @Nested
@@ -78,7 +77,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should add product to favourites successfully")
         void shouldAddProductToFavouritesSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddFavouriteRequest request = AddFavouriteRequest.builder()
                     .productId(1L)
@@ -101,7 +100,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return 409 when product already in favourites (idempotency)")
         void shouldReturn409WhenProductAlreadyInFavourites() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddFavouriteRequest request = AddFavouriteRequest.builder()
                     .productId(1L)
@@ -190,7 +189,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isCreated());
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddFavouriteRequest request = AddFavouriteRequest.builder()
                     .productId(1L)
@@ -255,7 +254,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return user favourites successfully")
         void shouldReturnUserFavouritesSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddFavouriteRequest request = AddFavouriteRequest.builder()
                     .productId(1L)
@@ -287,7 +286,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                     .price(899.99)
                     .build();
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
             when(productClient.getProductById(2L)).thenReturn(secondProduct);
 
             mockMvc.perform(post("/api/favourites")
@@ -313,7 +312,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return same favourites for repeated calls (idempotency)")
         void shouldReturnSameFavouritesForRepeatedCalls() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -351,7 +350,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                     .price(899.99)
                     .build();
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
             when(productClient.getProductById(2L)).thenReturn(secondProduct);
 
             mockMvc.perform(post("/api/favourites")
@@ -383,7 +382,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should handle deleted products gracefully")
         void shouldHandleDeletedProductsGracefully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -424,7 +423,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should remove favourite successfully")
         void shouldRemoveFavouriteSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -475,7 +474,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isCreated());
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -509,7 +508,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should allow re-adding after removal")
         void shouldAllowReAddingAfterRemoval() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -534,5 +533,3 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         }
     }
 }
-
-

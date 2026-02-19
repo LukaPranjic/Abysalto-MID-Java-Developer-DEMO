@@ -23,32 +23,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class CartControllerDbUnavailableTest extends AbysaltoTestAbstract {
 
-    private ProductDto sampleProduct;
+    private static final ProductDto SAMPLE_PRODUCT = ProductDto.builder()
+            .id(1L)
+            .title("iPhone 15")
+            .description("Latest Apple smartphone")
+            .category("smartphones")
+            .price(999.99)
+            .brand("Apple")
+            .build();
+
+    private static final RegisterRequest REGISTER_REQUEST = RegisterRequest.builder()
+            .username("testuser")
+            .email("testuser@example.com")
+            .password("password123")
+            .build();
 
     @BeforeEach
     @SneakyThrows
     protected void setUp() {
         super.setUp();
 
-        RegisterRequest registerRequest = RegisterRequest.builder()
-                .username("testuser")
-                .email("testuser@example.com")
-                .password("password123")
-                .build();
-
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
+                        .content(objectMapper.writeValueAsString(REGISTER_REQUEST)))
                 .andExpect(status().isCreated());
-
-        sampleProduct = ProductDto.builder()
-                .id(1L)
-                .title("iPhone 15")
-                .description("Latest Apple smartphone")
-                .category("smartphones")
-                .price(999.99)
-                .brand("Apple")
-                .build();
     }
 
     @Nested
@@ -59,7 +57,7 @@ class CartControllerDbUnavailableTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return 500 when database is unavailable during add to cart check")
         void shouldReturn500WhenDbUnavailableDuringAddToCartCheck() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             doThrow(new DataAccessResourceFailureException("Database connection failed"))
                     .when(cartItemRepository).existsByUserIdAndProductId(anyLong(), anyLong());
@@ -83,7 +81,7 @@ class CartControllerDbUnavailableTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return 500 when database fails during cart item save")
         void shouldReturn500WhenDbFailsDuringCartItemSave() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             doThrow(new DataAccessResourceFailureException("Database write failed"))
                     .when(cartItemRepository).save(any(CartItem.class));
@@ -144,4 +142,3 @@ class CartControllerDbUnavailableTest extends AbysaltoTestAbstract {
         }
     }
 }
-

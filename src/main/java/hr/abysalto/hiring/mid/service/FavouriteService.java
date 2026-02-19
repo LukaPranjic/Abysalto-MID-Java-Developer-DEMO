@@ -8,6 +8,7 @@ import hr.abysalto.hiring.mid.exception.FavouriteAlreadyExistsException;
 import hr.abysalto.hiring.mid.exception.ProductNotFoundException;
 import hr.abysalto.hiring.mid.exception.UserNotFoundException;
 import hr.abysalto.hiring.mid.repository.FavouriteRepository;
+import hr.abysalto.hiring.mid.util.FavouriteMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,19 +43,11 @@ public class FavouriteService {
             throw FavouriteAlreadyExistsException.forProduct(productId);
         }
 
-        Favourite favourite = Favourite.builder()
-                .userId(user.getId())
-                .productId(productId)
-                .build();
+        Favourite favourite = FavouriteMapper.mapToFavourite(user.getId(), productId);
 
         Favourite savedFavourite = favouriteRepository.save(favourite);
 
-        return FavouriteResponse.builder()
-                .id(savedFavourite.getId())
-                .userId(savedFavourite.getUserId())
-                .productId(savedFavourite.getProductId())
-                .message("Product added to favourites successfully")
-                .build();
+        return FavouriteMapper.mapToResponse(savedFavourite, "Product added to favourites successfully");
     }
 
     public List<ProductDto> getUserFavourites() {
@@ -90,4 +83,3 @@ public class FavouriteService {
         favouriteRepository.deleteByUserIdAndProductId(user.getId(), productId);
     }
 }
-

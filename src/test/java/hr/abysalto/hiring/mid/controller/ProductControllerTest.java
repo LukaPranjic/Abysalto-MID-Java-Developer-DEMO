@@ -4,7 +4,6 @@ import hr.abysalto.hiring.mid.configuration.AbysaltoTestAbstract;
 import hr.abysalto.hiring.mid.dto.ProductDto;
 import hr.abysalto.hiring.mid.dto.ProductsResponse;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -25,32 +24,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class ProductControllerTest extends AbysaltoTestAbstract {
 
-    private ProductDto sampleProduct;
-    private ProductsResponse sampleProductsResponse;
+    private static final ProductDto SAMPLE_PRODUCT = ProductDto.builder()
+            .id(1L)
+            .title("iPhone 15")
+            .description("Latest Apple smartphone")
+            .category("smartphones")
+            .price(999.99)
+            .discountPercentage(5.0)
+            .rating(4.5)
+            .stock(100)
+            .brand("Apple")
+            .sku("IPHONE15-128")
+            .thumbnail("https://example.com/iphone15.jpg")
+            .build();
 
-    @BeforeEach
-    protected void setUp() {
-        sampleProduct = ProductDto.builder()
-                .id(1L)
-                .title("iPhone 15")
-                .description("Latest Apple smartphone")
-                .category("smartphones")
-                .price(999.99)
-                .discountPercentage(5.0)
-                .rating(4.5)
-                .stock(100)
-                .brand("Apple")
-                .sku("IPHONE15-128")
-                .thumbnail("https://example.com/iphone15.jpg")
-                .build();
-
-        sampleProductsResponse = ProductsResponse.builder()
-                .products(List.of(sampleProduct))
-                .total(1)
-                .skip(0)
-                .limit(30)
-                .build();
-    }
+    private static final ProductsResponse SAMPLE_PRODUCTS_RESPONSE = ProductsResponse.builder()
+            .products(List.of(SAMPLE_PRODUCT))
+            .total(1)
+            .skip(0)
+            .limit(30)
+            .build();
 
     @Nested
     @DisplayName("GET /api/products")
@@ -70,7 +63,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return all products successfully when authenticated")
         void shouldReturnAllProductsSuccessfully() {
-            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(sampleProductsResponse);
+            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(SAMPLE_PRODUCTS_RESPONSE);
 
             mockMvc.perform(get("/api/products")
                             .with(authenticatedUser()))
@@ -92,7 +85,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @DisplayName("Should return products with custom pagination parameters")
         void shouldReturnProductsWithCustomPagination() {
             ProductsResponse paginatedResponse = ProductsResponse.builder()
-                    .products(List.of(sampleProduct))
+                    .products(List.of(SAMPLE_PRODUCT))
                     .total(100)
                     .skip(10)
                     .limit(5)
@@ -137,7 +130,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return same results for repeated calls (idempotency)")
         void shouldReturnSameResultsForRepeatedCalls() {
-            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(sampleProductsResponse);
+            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(SAMPLE_PRODUCTS_RESPONSE);
 
             mockMvc.perform(get("/api/products")
                             .with(authenticatedUser()))
@@ -189,7 +182,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return products sorted by price ascending")
         void shouldReturnProductsSortedByPriceAscending() {
-            when(productClient.getAllProducts(30, 0, "price", "asc")).thenReturn(sampleProductsResponse);
+            when(productClient.getAllProducts(30, 0, "price", "asc")).thenReturn(SAMPLE_PRODUCTS_RESPONSE);
 
             mockMvc.perform(get("/api/products")
                             .param("sortBy", "price")
@@ -205,7 +198,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return products sorted by rating descending")
         void shouldReturnProductsSortedByRatingDescending() {
-            when(productClient.getAllProducts(30, 0, "rating", "desc")).thenReturn(sampleProductsResponse);
+            when(productClient.getAllProducts(30, 0, "rating", "desc")).thenReturn(SAMPLE_PRODUCTS_RESPONSE);
 
             mockMvc.perform(get("/api/products")
                             .param("sortBy", "rating")
@@ -222,7 +215,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @DisplayName("Should return products with pagination and sorting combined")
         void shouldReturnProductsWithPaginationAndSorting() {
             ProductsResponse sortedPaginatedResponse = ProductsResponse.builder()
-                    .products(List.of(sampleProduct))
+                    .products(List.of(SAMPLE_PRODUCT))
                     .total(100)
                     .skip(20)
                     .limit(10)
@@ -263,7 +256,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return product successfully when authenticated")
         void shouldReturnProductSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(get("/api/products/1")
                             .with(authenticatedUser()))
@@ -303,7 +296,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return same product for repeated calls (idempotency)")
         void shouldReturnSameProductForRepeatedCalls() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(get("/api/products/1")
                             .with(authenticatedUser()))
@@ -331,7 +324,7 @@ class ProductControllerTest extends AbysaltoTestAbstract {
                     .price(899.99)
                     .build();
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
             when(productClient.getProductById(2L)).thenReturn(anotherProduct);
 
             mockMvc.perform(get("/api/products/1")
@@ -380,6 +373,4 @@ class ProductControllerTest extends AbysaltoTestAbstract {
         }
     }
 }
-
-
 

@@ -10,6 +10,7 @@ import hr.abysalto.hiring.mid.exception.UserNotFoundException;
 import hr.abysalto.hiring.mid.controller.problemdetail.AuthenticationFailedProblemDetail;
 import hr.abysalto.hiring.mid.controller.problemdetail.UserAlreadyExistsProblemDetail;
 import hr.abysalto.hiring.mid.service.UserService;
+import hr.abysalto.hiring.mid.util.UserMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -45,13 +46,7 @@ public class AuthController implements AuthV1 {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         log.info("Received a request to get current user with username: {}", username);
         return userService.findByUsername(username)
-                .map(user -> AuthResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .role(user.getRole())
-                        .message("User retrieved successfully")
-                        .build())
+                .map(user -> UserMapper.mapToResponse(user, "User retrieved successfully"))
                 .orElseThrow(() -> UserNotFoundException.forUsername(username));
     }
 

@@ -46,8 +46,13 @@ public abstract class AbysaltoTestAbstract {
     @MockitoSpyBean
     protected CartItemRepository cartItemRepository;
 
+    private static RequestPostProcessor authenticatedUserInstance;
+
     protected static RequestPostProcessor authenticatedUser() {
-        return authenticatedUser("testuser");
+        if (authenticatedUserInstance == null) {
+            authenticatedUserInstance = authenticatedUser("testuser");
+        }
+        return authenticatedUserInstance;
     }
 
     protected static RequestPostProcessor authenticatedUser(String username) {
@@ -61,4 +66,3 @@ public abstract class AbysaltoTestAbstract {
         cartItemRepository.deleteAll();
     }
 }
-

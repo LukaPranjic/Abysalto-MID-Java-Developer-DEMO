@@ -23,7 +23,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class CartControllerTest extends AbysaltoTestAbstract {
 
-    private ProductDto sampleProduct;
+    private static final ProductDto SAMPLE_PRODUCT = ProductDto.builder()
+            .id(1L)
+            .title("iPhone 15")
+            .description("Latest Apple smartphone")
+            .category("smartphones")
+            .price(999.99)
+            .brand("Apple")
+            .build();
+
+    private static final RegisterRequest REGISTER_REQUEST = RegisterRequest.builder()
+            .username("testuser")
+            .email("testuser@example.com")
+            .password("password123")
+            .build();
+
     private Long testUserId;
 
     @BeforeEach
@@ -31,29 +45,14 @@ class CartControllerTest extends AbysaltoTestAbstract {
     protected void setUp() {
         super.setUp();
 
-        RegisterRequest registerRequest = RegisterRequest.builder()
-                .username("testuser")
-                .email("testuser@example.com")
-                .password("password123")
-                .build();
-
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(registerRequest)))
+                        .content(objectMapper.writeValueAsString(REGISTER_REQUEST)))
                 .andExpect(status().isCreated());
 
         testUserId = userRepository.findByUsername("testuser")
                 .orElseThrow(() -> new RuntimeException("Test user not found"))
                 .getId();
-
-        sampleProduct = ProductDto.builder()
-                .id(1L)
-                .title("iPhone 15")
-                .description("Latest Apple smartphone")
-                .category("smartphones")
-                .price(999.99)
-                .brand("Apple")
-                .build();
     }
 
     @Nested
@@ -79,7 +78,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should add product to cart successfully")
         void shouldAddProductToCartSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
@@ -104,7 +103,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should add product with default quantity of 1")
         void shouldAddProductWithDefaultQuantity() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
@@ -122,7 +121,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return 409 when product already in cart")
         void shouldReturn409WhenProductAlreadyInCart() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
@@ -241,7 +240,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isCreated());
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
@@ -310,7 +309,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return user cart successfully")
         void shouldReturnUserCartSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
@@ -346,7 +345,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
                     .price(899.99)
                     .build();
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
             when(productClient.getProductById(2L)).thenReturn(secondProduct);
 
             mockMvc.perform(post("/api/cart")
@@ -373,7 +372,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return same cart for repeated calls (idempotency)")
         void shouldReturnSameCartForRepeatedCalls() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -411,7 +410,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
                     .price(899.99)
                     .build();
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
             when(productClient.getProductById(2L)).thenReturn(secondProduct);
 
             mockMvc.perform(post("/api/cart")
@@ -443,7 +442,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should handle deleted products gracefully")
         void shouldHandleDeletedProductsGracefully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -486,7 +485,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should remove item from cart successfully")
         void shouldRemoveItemFromCartSuccessfully() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -537,7 +536,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
                             .content(objectMapper.writeValueAsString(registerRequest)))
                     .andExpect(status().isCreated());
 
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -571,7 +570,7 @@ class CartControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should allow re-adding after removal")
         void shouldAllowReAddingAfterRemoval() {
-            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+            when(productClient.getProductById(1L)).thenReturn(SAMPLE_PRODUCT);
 
             mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)

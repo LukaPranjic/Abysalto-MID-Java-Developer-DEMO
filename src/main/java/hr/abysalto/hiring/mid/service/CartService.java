@@ -9,6 +9,7 @@ import hr.abysalto.hiring.mid.exception.CartItemAlreadyExistsException;
 import hr.abysalto.hiring.mid.exception.ProductNotFoundException;
 import hr.abysalto.hiring.mid.exception.UserNotFoundException;
 import hr.abysalto.hiring.mid.repository.CartItemRepository;
+import hr.abysalto.hiring.mid.util.CartMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -43,21 +44,11 @@ public class CartService {
             throw CartItemAlreadyExistsException.forProduct(productId);
         }
 
-        CartItem cartItem = CartItem.builder()
-                .userId(user.getId())
-                .productId(productId)
-                .quantity(quantity != null ? quantity : 1)
-                .build();
+        CartItem cartItem = CartMapper.mapToCartItem(user.getId(), productId, quantity);
 
         CartItem savedCartItem = cartItemRepository.save(cartItem);
 
-        return CartItemResponse.builder()
-                .id(savedCartItem.getId())
-                .userId(savedCartItem.getUserId())
-                .productId(savedCartItem.getProductId())
-                .quantity(savedCartItem.getQuantity())
-                .message("Product added to cart successfully")
-                .build();
+        return CartMapper.mapToResponse(savedCartItem, "Product added to cart successfully");
     }
 
     public CartResponse getUserCart() {
@@ -93,11 +84,7 @@ public class CartService {
                 .mapToDouble(item -> item.getProduct().getPrice() * item.getQuantity())
                 .sum();
 
-        return CartResponse.builder()
-                .items(items)
-                .totalItems(totalItems)
-                .totalPrice(totalPrice)
-                .build();
+        return CartMapper.mapToResponse(items, totalItems, totalPrice);
     }
 
     @Transactional
@@ -111,4 +98,3 @@ public class CartService {
         cartItemRepository.deleteByUserIdAndProductId(user.getId(), productId);
     }
 }
-
