@@ -532,4 +532,27 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                     .andExpect(jsonPath("$", hasSize(1)));
         }
     }
+
+    @Nested
+    @DisplayName("Validation Tests for AddFavouriteRequest")
+    class AddFavouriteRequestValidationTests {
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return 400 when productId is null")
+        void shouldReturn400WhenProductIdIsNull() {
+            AddFavouriteRequest invalidRequest = AddFavouriteRequest.builder()
+                    .productId(null) // Invalid productId
+                    .build();
+
+            mockMvc.perform(post("/api/favourites")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest))
+                            .with(authenticatedUser()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.violations", hasSize(1)))
+                    .andExpect(jsonPath("$.violations[0].propertyPath").value("productId"))
+                    .andExpect(jsonPath("$.violations[0].message").value("Product ID is required"));
+        }
+    }
 }

@@ -278,6 +278,43 @@ class CartControllerTest extends AbysaltoTestAbstract {
                             .with(authenticatedUser()))
                     .andExpect(status().isInternalServerError());
         }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return 400 when AddToCartRequest is missing productId")
+        void shouldReturn400WhenAddToCartRequestIsMissingProductId() {
+            AddToCartRequest invalidRequest = AddToCartRequest.builder()
+                    .quantity(5)
+                    .build();
+
+            mockMvc.perform(post("/api/cart")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest))
+                            .with(authenticatedUser()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.violations", hasSize(1)))
+                    .andExpect(jsonPath("$.violations[0].propertyPath").value("productId"))
+                    .andExpect(jsonPath("$.violations[0].message").value("Product ID is required"));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return 400 when AddToCartRequest has negative quantity")
+        void shouldReturn400WhenAddToCartRequestHasNegativeQuantity() {
+            AddToCartRequest invalidRequest = AddToCartRequest.builder()
+                    .productId(1L)
+                    .quantity(-5) // Invalid quantity
+                    .build();
+
+            mockMvc.perform(post("/api/cart")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(invalidRequest))
+                            .with(authenticatedUser()))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.violations[0].propertyPath").value("quantity"))
+                    .andExpect(jsonPath("$.violations[0].rejectedValue").value("-5"))
+                    .andExpect(jsonPath("$.violations[0].message").value("Quantity must be at least 1"));
+        }
     }
 
     @Nested
