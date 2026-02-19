@@ -11,14 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -27,23 +25,14 @@ class FavouriteControllerTest extends AbstractControllerTest {
     private ProductDto sampleProduct;
     private Long testUserId;
 
-    static RequestPostProcessor authenticatedUser() {
-        return user("favouriteuser").roles("USER");
-    }
-
-    static RequestPostProcessor authenticatedUserWithName(String username) {
-        return user(username).roles("USER");
-    }
-
     @BeforeEach
     @SneakyThrows
     void setUp() {
-        favouriteRepository.deleteAll();
-        userRepository.deleteAll();
+        super.setUp();
 
         RegisterRequest registerRequest = RegisterRequest.builder()
-                .username("favouriteuser")
-                .email("favouriteuser@example.com")
+                .username("testuser")
+                .email("testuser@example.com")
                 .password("password123")
                 .build();
 
@@ -52,7 +41,7 @@ class FavouriteControllerTest extends AbstractControllerTest {
                         .content(objectMapper.writeValueAsString(registerRequest)))
                 .andExpect(status().isCreated());
 
-        testUserId = userRepository.findByUsername("favouriteuser")
+        testUserId = userRepository.findByUsername("testuser")
                 .orElseThrow(() -> new RuntimeException("Test user not found"))
                 .getId();
 
@@ -209,13 +198,13 @@ class FavouriteControllerTest extends AbstractControllerTest {
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
-                            .with(authenticatedUserWithName("favouriteuser")))
+                            .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
-                            .with(authenticatedUserWithName("anotheruser")))
+                            .with(authenticatedUser("anotheruser")))
                     .andExpect(status().isCreated());
         }
 
@@ -367,23 +356,23 @@ class FavouriteControllerTest extends AbstractControllerTest {
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
-                            .with(authenticatedUserWithName("favouriteuser")))
+                            .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(2L).build()))
-                            .with(authenticatedUserWithName("otheruser")))
+                            .with(authenticatedUser("otheruser")))
                     .andExpect(status().isCreated());
 
             mockMvc.perform(get("/api/favourites")
-                            .with(authenticatedUserWithName("favouriteuser")))
+                            .with(authenticatedUser()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
                     .andExpect(jsonPath("$[0].id").value(1));
 
             mockMvc.perform(get("/api/favourites")
-                            .with(authenticatedUserWithName("otheruser")))
+                            .with(authenticatedUser("otheruser")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
                     .andExpect(jsonPath("$[0].id").value(2));
@@ -490,26 +479,26 @@ class FavouriteControllerTest extends AbstractControllerTest {
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
-                            .with(authenticatedUserWithName("favouriteuser")))
+                            .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
             mockMvc.perform(post("/api/favourites")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
-                            .with(authenticatedUserWithName("thirduser")))
+                            .with(authenticatedUser("thirduser")))
                     .andExpect(status().isCreated());
 
             mockMvc.perform(delete("/api/favourites/1")
-                            .with(authenticatedUserWithName("favouriteuser")))
+                            .with(authenticatedUser()))
                     .andExpect(status().isNoContent());
 
             mockMvc.perform(get("/api/favourites")
-                            .with(authenticatedUserWithName("favouriteuser")))
+                            .with(authenticatedUser()))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(0)));
 
             mockMvc.perform(get("/api/favourites")
-                            .with(authenticatedUserWithName("thirduser")))
+                            .with(authenticatedUser("thirduser")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$", hasSize(1)))
                     .andExpect(jsonPath("$[0].id").value(1));

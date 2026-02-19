@@ -6,6 +6,8 @@ spring:
   h2:
     console:
       enabled: false
+  cache:
+    type: none
 
 logging:
   level:

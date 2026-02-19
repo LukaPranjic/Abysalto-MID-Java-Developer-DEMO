@@ -17,11 +17,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class AuthControllerTest extends AbstractControllerTest {
 
-    @BeforeEach
-    void setUp() {
-        userRepository.deleteAll();
-    }
-
     @Nested
     @DisplayName("POST /api/auth/register")
     class RegisterTests {

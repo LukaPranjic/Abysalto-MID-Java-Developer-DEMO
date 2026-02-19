@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.MediaType;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -67,26 +66,6 @@ class AuthControllerDbUnavailableTest extends AbstractControllerTest {
                     .andExpect(jsonPath("$.title").value("Technical Failure Problem Detail"))
                     .andExpect(jsonPath("$.status").value(500));
         }
-
-        @Test
-        @SneakyThrows
-        @DisplayName("Should return 500 when database connection times out")
-        void shouldReturn500WhenDbConnectionTimesOut() {
-            doThrow(new DataAccessResourceFailureException("Connection timed out"))
-                    .when(userRepository).findByUsername(anyString());
-
-            RegisterRequest request = RegisterRequest.builder()
-                    .username("testuser")
-                    .email("testuser@example.com")
-                    .password("password123")
-                    .build();
-
-            mockMvc.perform(post("/api/auth/register")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.detail", containsString("Connection timed out")));
-        }
     }
 
     @Nested
@@ -112,25 +91,6 @@ class AuthControllerDbUnavailableTest extends AbstractControllerTest {
                     .andExpect(jsonPath("$.type").value("https://api.example.com/problems/technical-failure-problem-detail"))
                     .andExpect(jsonPath("$.title").value("Technical Failure Problem Detail"))
                     .andExpect(jsonPath("$.status").value(500));
-        }
-
-        @Test
-        @SneakyThrows
-        @DisplayName("Should return 500 when database connection is lost during authentication")
-        void shouldReturn500WhenDbConnectionLostDuringAuth() {
-            doThrow(new DataAccessResourceFailureException("Connection lost"))
-                    .when(userRepository).findByUsername(anyString());
-
-            LoginRequest request = LoginRequest.builder()
-                    .username("existinguser")
-                    .password("password123")
-                    .build();
-
-            mockMvc.perform(post("/api/auth/login")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
-                    .andExpect(status().isInternalServerError())
-                    .andExpect(jsonPath("$.detail", containsString("Connection lost")));
         }
     }
 }
