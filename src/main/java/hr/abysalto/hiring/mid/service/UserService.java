@@ -3,7 +3,7 @@ package hr.abysalto.hiring.mid.service;
 import hr.abysalto.hiring.mid.dto.AuthResponse;
 import hr.abysalto.hiring.mid.dto.LoginRequest;
 import hr.abysalto.hiring.mid.dto.RegisterRequest;
-import hr.abysalto.hiring.mid.entity.User;
+import hr.abysalto.hiring.mid.repository.entity.User;
 import hr.abysalto.hiring.mid.exception.UserAlreadyExistsException;
 import hr.abysalto.hiring.mid.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;

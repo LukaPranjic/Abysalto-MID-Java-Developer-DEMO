@@ -2,8 +2,8 @@ package hr.abysalto.hiring.mid.service;
 
 import hr.abysalto.hiring.mid.dto.FavouriteResponse;
 import hr.abysalto.hiring.mid.dto.ProductDto;
-import hr.abysalto.hiring.mid.entity.Favourite;
-import hr.abysalto.hiring.mid.entity.User;
+import hr.abysalto.hiring.mid.repository.entity.Favourite;
+import hr.abysalto.hiring.mid.repository.entity.User;
 import hr.abysalto.hiring.mid.exception.FavouriteAlreadyExistsException;
 import hr.abysalto.hiring.mid.exception.ProductNotFoundException;
 import hr.abysalto.hiring.mid.exception.UserNotFoundException;

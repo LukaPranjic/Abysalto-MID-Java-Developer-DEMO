@@ -1,5 +1,6 @@
 package hr.abysalto.hiring.mid.controller;
 
+import hr.abysalto.hiring.mid.configuration.AbysaltoTestAbstract;
 import hr.abysalto.hiring.mid.dto.LoginRequest;
 import hr.abysalto.hiring.mid.dto.RegisterRequest;
 import lombok.SneakyThrows;
@@ -15,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class AuthControllerTest extends AbstractControllerTest {
+class AuthControllerTest extends AbysaltoTestAbstract {
 
     @Nested
     @DisplayName("POST /api/auth/register")

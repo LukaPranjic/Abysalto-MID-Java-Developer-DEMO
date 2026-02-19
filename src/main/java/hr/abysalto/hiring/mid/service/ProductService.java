@@ -30,6 +30,13 @@ public class ProductService {
         return productClient.getAllProducts(limit, skip);
     }
 
+    @Cacheable(value = CacheConfig.PRODUCTS_CACHE, key = "'products_' + #limit + '_' + #skip + '_' + #sortBy + '_' + #order")
+    public ProductsResponse getAllProducts(Integer limit, Integer skip, String sortBy, String order) {
+        log.info("Fetching products from DummyJSON API with limit: {}, skip: {}, sortBy: {}, order: {}",
+                limit, skip, sortBy, order);
+        return productClient.getAllProducts(limit, skip, sortBy, order);
+    }
+
     @Cacheable(value = CacheConfig.PRODUCT_BY_ID_CACHE, key = "#productId")
     public ProductDto getProductById(Long productId) {
         log.info("Fetching product with id: {} from DummyJSON API", productId);

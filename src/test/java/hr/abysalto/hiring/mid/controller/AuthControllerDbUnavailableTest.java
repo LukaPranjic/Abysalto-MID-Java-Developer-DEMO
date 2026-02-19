@@ -1,8 +1,9 @@
 package hr.abysalto.hiring.mid.controller;
 
+import hr.abysalto.hiring.mid.configuration.AbysaltoTestAbstract;
 import hr.abysalto.hiring.mid.dto.LoginRequest;
 import hr.abysalto.hiring.mid.dto.RegisterRequest;
-import hr.abysalto.hiring.mid.entity.User;
+import hr.abysalto.hiring.mid.repository.entity.User;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,7 +18,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AuthControllerDbUnavailableTest extends AbstractControllerTest {
+class AuthControllerDbUnavailableTest extends AbysaltoTestAbstract {
 
     @Nested
     @DisplayName("POST /api/auth/register - DB Unavailable")

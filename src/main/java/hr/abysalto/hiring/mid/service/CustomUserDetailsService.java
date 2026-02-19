@@ -1,6 +1,6 @@
 package hr.abysalto.hiring.mid.service;
 
-import hr.abysalto.hiring.mid.entity.User;
+import hr.abysalto.hiring.mid.repository.entity.User;
 import hr.abysalto.hiring.mid.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,15 +22,11 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isEnabled(),
-                true,
-                true,
-                true,
-                Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
-        );
+        return org.springframework.security.core.userdetails.User.builder()
+                .username(user.getUsername())
+                .password(user.getPassword())
+                .authorities(Collections.singletonList(new SimpleGrantedAuthority(user.getRole())))
+                .build();
     }
 }
 

@@ -1,8 +1,8 @@
-package hr.abysalto.hiring.mid.controller;
+package hr.abysalto.hiring.mid.configuration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hr.abysalto.hiring.mid.client.ProductClient;
-import hr.abysalto.hiring.mid.configuration.TestCacheConfig;
+import hr.abysalto.hiring.mid.repository.CartItemRepository;
 import hr.abysalto.hiring.mid.repository.FavouriteRepository;
 import hr.abysalto.hiring.mid.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +26,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(TestCacheConfig.class)
-public abstract class AbstractControllerTest {
+public abstract class AbysaltoTestAbstract {
 
     @Autowired
     protected MockMvc mockMvc;
@@ -43,18 +43,22 @@ public abstract class AbstractControllerTest {
     @Autowired
     protected FavouriteRepository favouriteRepository;
 
-    static RequestPostProcessor authenticatedUser() {
+    @MockitoSpyBean
+    protected CartItemRepository cartItemRepository;
+
+    protected static RequestPostProcessor authenticatedUser() {
         return authenticatedUser("testuser");
     }
 
-    static RequestPostProcessor authenticatedUser(String username) {
+    protected static RequestPostProcessor authenticatedUser(String username) {
         return user(username).roles("USER");
     }
 
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         userRepository.deleteAll();
         favouriteRepository.deleteAll();
+        cartItemRepository.deleteAll();
     }
 }
 

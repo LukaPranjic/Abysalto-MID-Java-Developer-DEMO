@@ -1,7 +1,7 @@
 package hr.abysalto.hiring.mid.controller;
 
 import hr.abysalto.hiring.mid.configuration.AbysaltoTestAbstract;
-import hr.abysalto.hiring.mid.dto.AddFavouriteRequest;
+import hr.abysalto.hiring.mid.dto.AddToCartRequest;
 import hr.abysalto.hiring.mid.dto.ProductDto;
 import hr.abysalto.hiring.mid.dto.RegisterRequest;
 import lombok.SneakyThrows;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class FavouriteControllerTest extends AbysaltoTestAbstract {
+class CartControllerTest extends AbysaltoTestAbstract {
 
     private ProductDto sampleProduct;
     private Long testUserId;
@@ -57,18 +57,19 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
     }
 
     @Nested
-    @DisplayName("POST /api/favourites")
-    class AddToFavouritesTests {
+    @DisplayName("POST /api/cart")
+    class AddToCartTests {
 
         @Test
         @SneakyThrows
         @DisplayName("Should return 401 when not authenticated")
         void shouldReturn401WhenNotAuthenticated() {
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
+                    .quantity(1)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request)))
                     .andExpect(status().isUnauthorized());
@@ -76,15 +77,16 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
 
         @Test
         @SneakyThrows
-        @DisplayName("Should add product to favourites successfully")
-        void shouldAddProductToFavouritesSuccessfully() {
+        @DisplayName("Should add product to cart successfully")
+        void shouldAddProductToCartSuccessfully() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
+                    .quantity(2)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
@@ -92,34 +94,54 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                     .andExpect(jsonPath("$.id").isNumber())
                     .andExpect(jsonPath("$.userId").value(testUserId))
                     .andExpect(jsonPath("$.productId").value(1))
-                    .andExpect(jsonPath("$.message").value("Product added to favourites successfully"));
+                    .andExpect(jsonPath("$.quantity").value(2))
+                    .andExpect(jsonPath("$.message").value("Product added to cart successfully"));
 
             verify(productClient, times(1)).getProductById(1L);
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should return 409 when product already in favourites (idempotency)")
-        void shouldReturn409WhenProductAlreadyInFavourites() {
+        @DisplayName("Should add product with default quantity of 1")
+        void shouldAddProductWithDefaultQuantity() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(authenticatedUser()))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.quantity").value(1));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return 409 when product already in cart")
+        void shouldReturn409WhenProductAlreadyInCart() {
+            when(productClient.getProductById(1L)).thenReturn(sampleProduct);
+
+            AddToCartRequest request = AddToCartRequest.builder()
+                    .productId(1L)
+                    .quantity(1)
+                    .build();
+
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
                     .andExpect(status().isConflict())
-                    .andExpect(jsonPath("$.type").value("https://api.example.com/problems/favourite-already-exists-problem-detail"))
-                    .andExpect(jsonPath("$.title").value("Favourite Already Exists Problem Detail"))
+                    .andExpect(jsonPath("$.type").value("https://api.example.com/problems/cart-item-already-exists-problem-detail"))
+                    .andExpect(jsonPath("$.title").value("Cart Item Already Exists Problem Detail"))
                     .andExpect(jsonPath("$.status").value(409));
         }
 
@@ -135,11 +157,12 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                             null,
                             null));
 
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(999L)
+                    .quantity(1)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
@@ -153,11 +176,12 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return 400 when productId is null")
         void shouldReturn400WhenProductIdIsNull() {
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(null)
+                    .quantity(1)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
@@ -168,7 +192,7 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         @SneakyThrows
         @DisplayName("Should return 400 when request body is empty")
         void shouldReturn400WhenRequestBodyIsEmpty() {
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{}")
                             .with(authenticatedUser()))
@@ -177,8 +201,35 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
 
         @Test
         @SneakyThrows
-        @DisplayName("Should allow different users to favourite same product")
-        void shouldAllowDifferentUsersToFavouriteSameProduct() {
+        @DisplayName("Should return 400 when quantity is zero or negative")
+        void shouldReturn400WhenQuantityIsInvalid() {
+            AddToCartRequest request = AddToCartRequest.builder()
+                    .productId(1L)
+                    .quantity(0)
+                    .build();
+
+            mockMvc.perform(post("/api/cart")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(request))
+                            .with(authenticatedUser()))
+                    .andExpect(status().isBadRequest());
+
+            AddToCartRequest negativeRequest = AddToCartRequest.builder()
+                    .productId(1L)
+                    .quantity(-1)
+                    .build();
+
+            mockMvc.perform(post("/api/cart")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(negativeRequest))
+                            .with(authenticatedUser()))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should allow different users to add same product to cart")
+        void shouldAllowDifferentUsersToAddSameProductToCart() {
             RegisterRequest registerRequest = RegisterRequest.builder()
                     .username("anotheruser")
                     .email("anotheruser@example.com")
@@ -192,17 +243,18 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
 
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
+                    .quantity(1)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser("anotheruser")))
@@ -216,11 +268,12 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
             when(productClient.getProductById(anyLong()))
                     .thenThrow(new ResourceAccessException("Connection refused"));
 
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
+                    .quantity(1)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
@@ -229,58 +282,64 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
     }
 
     @Nested
-    @DisplayName("GET /api/favourites")
-    class GetUserFavouritesTests {
+    @DisplayName("GET /api/cart")
+    class GetUserCartTests {
 
         @Test
         @SneakyThrows
         @DisplayName("Should return 401 when not authenticated")
         void shouldReturn401WhenNotAuthenticated() {
-            mockMvc.perform(get("/api/favourites"))
+            mockMvc.perform(get("/api/cart"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should return empty list when no favourites")
-        void shouldReturnEmptyListWhenNoFavourites() {
-            mockMvc.perform(get("/api/favourites")
+        @DisplayName("Should return empty cart when no items")
+        void shouldReturnEmptyCartWhenNoItems() {
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.items").isArray())
+                    .andExpect(jsonPath("$.items", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems").value(0))
+                    .andExpect(jsonPath("$.totalPrice").value(0.0));
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should return user favourites successfully")
-        void shouldReturnUserFavouritesSuccessfully() {
+        @DisplayName("Should return user cart successfully")
+        void shouldReturnUserCartSuccessfully() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            AddFavouriteRequest request = AddFavouriteRequest.builder()
+            AddToCartRequest request = AddToCartRequest.builder()
                     .productId(1L)
+                    .quantity(2)
                     .build();
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(request))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].id").value(1))
-                    .andExpect(jsonPath("$[0].title").value("iPhone 15"))
-                    .andExpect(jsonPath("$[0].price").value(999.99));
+                    .andExpect(jsonPath("$.items").isArray())
+                    .andExpect(jsonPath("$.items", hasSize(1)))
+                    .andExpect(jsonPath("$.items[0].product.id").value(1))
+                    .andExpect(jsonPath("$.items[0].product.title").value("iPhone 15"))
+                    .andExpect(jsonPath("$.items[0].product.price").value(999.99))
+                    .andExpect(jsonPath("$.items[0].quantity").value(2))
+                    .andExpect(jsonPath("$.totalItems").value(2))
+                    .andExpect(jsonPath("$.totalPrice").value(1999.98));
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should return multiple favourites")
-        void shouldReturnMultipleFavourites() {
+        @DisplayName("Should return multiple cart items with correct totals")
+        void shouldReturnMultipleCartItemsWithCorrectTotals() {
             ProductDto secondProduct = ProductDto.builder()
                     .id(2L)
                     .title("Samsung Galaxy S24")
@@ -290,50 +349,51 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
             when(productClient.getProductById(2L)).thenReturn(secondProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(2).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(2L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(2L).quantity(3).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$", hasSize(2)));
+                    .andExpect(jsonPath("$.items", hasSize(2)))
+                    .andExpect(jsonPath("$.totalItems").value(5))
+                    .andExpect(jsonPath("$.totalPrice").value(closeTo(4699.95, 0.01)));
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should return same favourites for repeated calls (idempotency)")
-        void shouldReturnSameFavouritesForRepeatedCalls() {
+        @DisplayName("Should return same cart for repeated calls (idempotency)")
+        void shouldReturnSameCartForRepeatedCalls() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
             for (int i = 0; i < 3; i++) {
-                mockMvc.perform(get("/api/favourites")
+                mockMvc.perform(get("/api/cart")
                                 .with(authenticatedUser()))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$", hasSize(1)))
-                        .andExpect(jsonPath("$[0].id").value(1));
+                        .andExpect(jsonPath("$.items", hasSize(1)))
+                        .andExpect(jsonPath("$.items[0].product.id").value(1));
             }
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should return only current user's favourites")
-        void shouldReturnOnlyCurrentUserFavourites() {
+        @DisplayName("Should return only current user's cart items")
+        void shouldReturnOnlyCurrentUserCartItems() {
             RegisterRequest registerRequest = RegisterRequest.builder()
                     .username("otheruser")
                     .email("otheruser@example.com")
@@ -354,29 +414,29 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
             when(productClient.getProductById(2L)).thenReturn(secondProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(2L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(2L).quantity(1).build()))
                             .with(authenticatedUser("otheruser")))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].id").value(1));
+                    .andExpect(jsonPath("$.items", hasSize(1)))
+                    .andExpect(jsonPath("$.items[0].product.id").value(1));
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser("otheruser")))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].id").value(2));
+                    .andExpect(jsonPath("$.items", hasSize(1)))
+                    .andExpect(jsonPath("$.items[0].product.id").value(2));
         }
 
         @Test
@@ -385,9 +445,9 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         void shouldHandleDeletedProductsGracefully() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
@@ -400,70 +460,72 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
                             null,
                             null));
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$").isArray())
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.items").isArray())
+                    .andExpect(jsonPath("$.items", hasSize(0)))
+                    .andExpect(jsonPath("$.totalItems").value(0))
+                    .andExpect(jsonPath("$.totalPrice").value(0.0));
         }
     }
 
     @Nested
-    @DisplayName("DELETE /api/favourites/{productId}")
-    class RemoveFromFavouritesTests {
+    @DisplayName("DELETE /api/cart/{productId}")
+    class RemoveFromCartTests {
 
         @Test
         @SneakyThrows
         @DisplayName("Should return 401 when not authenticated")
         void shouldReturn401WhenNotAuthenticated() {
-            mockMvc.perform(delete("/api/favourites/1"))
+            mockMvc.perform(delete("/api/cart/1"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should remove favourite successfully")
-        void shouldRemoveFavouriteSuccessfully() {
+        @DisplayName("Should remove item from cart successfully")
+        void shouldRemoveItemFromCartSuccessfully() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(1)));
+                    .andExpect(jsonPath("$.items", hasSize(1)));
 
-            mockMvc.perform(delete("/api/favourites/1")
+            mockMvc.perform(delete("/api/cart/1")
                             .with(authenticatedUser()))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.items", hasSize(0)));
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should be idempotent - removing non-existent favourite returns 204")
-        void shouldBeIdempotentRemovingNonExistentFavourite() {
-            mockMvc.perform(delete("/api/favourites/999")
+        @DisplayName("Should be idempotent - removing non-existent item returns 204")
+        void shouldBeIdempotentRemovingNonExistentItem() {
+            mockMvc.perform(delete("/api/cart/999")
                             .with(authenticatedUser()))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(delete("/api/favourites/999")
+            mockMvc.perform(delete("/api/cart/999")
                             .with(authenticatedUser()))
                     .andExpect(status().isNoContent());
         }
 
         @Test
         @SneakyThrows
-        @DisplayName("Should not affect other users favourites")
-        void shouldNotAffectOtherUsersFavourites() {
+        @DisplayName("Should not affect other users cart items")
+        void shouldNotAffectOtherUsersCartItems() {
             RegisterRequest registerRequest = RegisterRequest.builder()
                     .username("thirduser")
                     .email("thirduser@example.com")
@@ -477,32 +539,32 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
 
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser("thirduser")))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(delete("/api/favourites/1")
+            mockMvc.perform(delete("/api/cart/1")
                             .with(authenticatedUser()))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(0)));
+                    .andExpect(jsonPath("$.items", hasSize(0)));
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser("thirduser")))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(1)))
-                    .andExpect(jsonPath("$[0].id").value(1));
+                    .andExpect(jsonPath("$.items", hasSize(1)))
+                    .andExpect(jsonPath("$.items[0].product.id").value(1));
         }
 
         @Test
@@ -511,28 +573,28 @@ class FavouriteControllerTest extends AbysaltoTestAbstract {
         void shouldAllowReAddingAfterRemoval() {
             when(productClient.getProductById(1L)).thenReturn(sampleProduct);
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(1).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(delete("/api/favourites/1")
+            mockMvc.perform(delete("/api/cart/1")
                             .with(authenticatedUser()))
                     .andExpect(status().isNoContent());
 
-            mockMvc.perform(post("/api/favourites")
+            mockMvc.perform(post("/api/cart")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(AddFavouriteRequest.builder().productId(1L).build()))
+                            .content(objectMapper.writeValueAsString(AddToCartRequest.builder().productId(1L).quantity(3).build()))
                             .with(authenticatedUser()))
                     .andExpect(status().isCreated());
 
-            mockMvc.perform(get("/api/favourites")
+            mockMvc.perform(get("/api/cart")
                             .with(authenticatedUser()))
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("$", hasSize(1)));
+                    .andExpect(jsonPath("$.items", hasSize(1)))
+                    .andExpect(jsonPath("$.items[0].quantity").value(3));
         }
     }
 }
-
 

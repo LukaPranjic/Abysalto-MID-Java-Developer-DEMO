@@ -19,9 +19,10 @@ public class ProductController implements ProductV1 {
     private final ProductService productService;
 
     @Override
-    public ProductsResponse getAllProducts(Integer limit, Integer skip) {
-        log.info("Received request to get all products with limit: {} and skip: {}", limit, skip);
-        return productService.getAllProducts(limit, skip);
+    public ProductsResponse getAllProducts(Integer limit, Integer skip, String sortBy, String order) {
+        log.info("Received request to get all products with limit: {}, skip: {}, sortBy: {}, order: {}",
+                limit, skip, sortBy, order);
+        return productService.getAllProducts(limit, skip, sortBy, order);
     }
 
     @Override

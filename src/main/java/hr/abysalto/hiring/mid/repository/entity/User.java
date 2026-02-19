@@ -1,4 +1,4 @@
-package hr.abysalto.hiring.mid.entity;
+package hr.abysalto.hiring.mid.repository.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,14 +11,20 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("FAVOURITES")
-public class Favourite {
+@Table("USERS")
+public class User {
 
     @Id
     private Long id;
 
-    private Long userId;
+    private String username;
 
-    private Long productId;
+    private String email;
+
+    private String password;
+
+    private String role;
+
+    private boolean enabled;
 }
 

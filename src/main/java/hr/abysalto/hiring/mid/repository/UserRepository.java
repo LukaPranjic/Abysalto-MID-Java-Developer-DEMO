@@ -1,6 +1,6 @@
 package hr.abysalto.hiring.mid.repository;
 
-import hr.abysalto.hiring.mid.entity.User;
+import hr.abysalto.hiring.mid.repository.entity.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

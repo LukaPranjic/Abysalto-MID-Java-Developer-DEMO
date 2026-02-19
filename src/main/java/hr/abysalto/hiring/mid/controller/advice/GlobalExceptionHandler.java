@@ -1,4 +1,4 @@
-package hr.abysalto.hiring.mid.exception;
+package hr.abysalto.hiring.mid.controller.advice;
 
 import hr.abysalto.hiring.mid.controller.problemdetail.TechnicalFailureProblemDetail;
 import hr.abysalto.hiring.mid.controller.problemdetail.ValidationFailureProblemDetail;

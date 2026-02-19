@@ -1,4 +1,4 @@
-package hr.abysalto.hiring.mid.entity;
+package hr.abysalto.hiring.mid.repository.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,20 +11,16 @@ import org.springframework.data.relational.core.mapping.Table;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("USERS")
-public class User {
+@Table("CART_ITEMS")
+public class CartItem {
 
     @Id
     private Long id;
 
-    private String username;
+    private Long userId;
 
-    private String email;
+    private Long productId;
 
-    private String password;
-
-    private String role;
-
-    private boolean enabled;
+    private Integer quantity;
 }
 

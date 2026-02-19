@@ -11,6 +11,12 @@ import java.util.List;
 @Setter
 public class ValidationFailureProblemDetail extends ProblemDetail {
 
+    private static final String VALIDATION_FAILURE_PROBLEM_DETAIL_TITLE = "Validation Failure Problem Detail";
+    private static final URI VALIDATION_FAILURE_PROBLEM_DETAIL_URI =
+            URI.create("https://api.example.com/problems/validation-failure-problem-detail");
+    private static final String DEFAULT_DETAIL =
+            "Validation of the request failed. Check the violations for more information on the rejected property path, value, and for an expected value.";
+
     public record Violation(String propertyPath, String rejectedValue, String message) { }
 
     private List<Violation> violations;
@@ -30,10 +36,4 @@ public class ValidationFailureProblemDetail extends ProblemDetail {
         this.setDetail(DEFAULT_DETAIL);
         this.violations = violations;
     }
-
-    private static final String VALIDATION_FAILURE_PROBLEM_DETAIL_TITLE = "Validation Failure Problem Detail";
-    private static final URI VALIDATION_FAILURE_PROBLEM_DETAIL_URI =
-            URI.create("https://api.example.com/problems/validation-failure-problem-detail");
-    private static final String DEFAULT_DETAIL =
-            "Validation of the request failed. Check the violations for more information on the rejected property path, value, and for an expected value.";
 }

@@ -1,5 +1,6 @@
 package hr.abysalto.hiring.mid.controller;
 
+import hr.abysalto.hiring.mid.configuration.AbysaltoTestAbstract;
 import hr.abysalto.hiring.mid.dto.ProductDto;
 import hr.abysalto.hiring.mid.dto.ProductsResponse;
 import lombok.SneakyThrows;
@@ -15,19 +16,20 @@ import org.springframework.web.client.ResourceAccessException;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-class ProductControllerTest extends AbstractControllerTest {
+class ProductControllerTest extends AbysaltoTestAbstract {
 
     private ProductDto sampleProduct;
     private ProductsResponse sampleProductsResponse;
 
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         sampleProduct = ProductDto.builder()
                 .id(1L)
                 .title("iPhone 15")
@@ -68,7 +70,7 @@ class ProductControllerTest extends AbstractControllerTest {
         @SneakyThrows
         @DisplayName("Should return all products successfully when authenticated")
         void shouldReturnAllProductsSuccessfully() {
-            when(productClient.getAllProducts(30, 0)).thenReturn(sampleProductsResponse);
+            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(sampleProductsResponse);
 
             mockMvc.perform(get("/api/products")
                             .with(authenticatedUser()))
@@ -82,7 +84,7 @@ class ProductControllerTest extends AbstractControllerTest {
                     .andExpect(jsonPath("$.skip").value(0))
                     .andExpect(jsonPath("$.limit").value(30));
 
-            verify(productClient, times(1)).getAllProducts(30, 0);
+            verify(productClient, times(1)).getAllProducts(30, 0, null, null);
         }
 
         @Test
@@ -96,7 +98,7 @@ class ProductControllerTest extends AbstractControllerTest {
                     .limit(5)
                     .build();
 
-            when(productClient.getAllProducts(5, 10)).thenReturn(paginatedResponse);
+            when(productClient.getAllProducts(5, 10, null, null)).thenReturn(paginatedResponse);
 
             mockMvc.perform(get("/api/products")
                             .param("limit", "5")
@@ -107,7 +109,7 @@ class ProductControllerTest extends AbstractControllerTest {
                     .andExpect(jsonPath("$.limit").value(5))
                     .andExpect(jsonPath("$.total").value(100));
 
-            verify(productClient, times(1)).getAllProducts(5, 10);
+            verify(productClient, times(1)).getAllProducts(5, 10, null, null);
         }
 
         @Test
@@ -121,7 +123,7 @@ class ProductControllerTest extends AbstractControllerTest {
                     .limit(30)
                     .build();
 
-            when(productClient.getAllProducts(30, 0)).thenReturn(emptyResponse);
+            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(emptyResponse);
 
             mockMvc.perform(get("/api/products")
                             .with(authenticatedUser()))
@@ -135,7 +137,7 @@ class ProductControllerTest extends AbstractControllerTest {
         @SneakyThrows
         @DisplayName("Should return same results for repeated calls (idempotency)")
         void shouldReturnSameResultsForRepeatedCalls() {
-            when(productClient.getAllProducts(30, 0)).thenReturn(sampleProductsResponse);
+            when(productClient.getAllProducts(30, 0, null, null)).thenReturn(sampleProductsResponse);
 
             mockMvc.perform(get("/api/products")
                             .with(authenticatedUser()))
@@ -152,14 +154,14 @@ class ProductControllerTest extends AbstractControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.products[0].id").value(1));
 
-            verify(productClient, times(3)).getAllProducts(30, 0);
+            verify(productClient, times(3)).getAllProducts(30, 0, null, null);
         }
 
         @Test
         @SneakyThrows
         @DisplayName("Should return 500 when external service is unavailable")
         void shouldReturn500WhenExternalServiceUnavailable() {
-            when(productClient.getAllProducts(anyInt(), anyInt()))
+            when(productClient.getAllProducts(anyInt(), anyInt(), any(), any()))
                     .thenThrow(new ResourceAccessException("Connection refused"));
 
             mockMvc.perform(get("/api/products")
@@ -174,13 +176,72 @@ class ProductControllerTest extends AbstractControllerTest {
         @SneakyThrows
         @DisplayName("Should return 500 when external service times out")
         void shouldReturn500WhenExternalServiceTimesOut() {
-            when(productClient.getAllProducts(anyInt(), anyInt()))
+            when(productClient.getAllProducts(anyInt(), anyInt(), any(), any()))
                     .thenThrow(new ResourceAccessException("Read timed out"));
 
             mockMvc.perform(get("/api/products")
                             .with(authenticatedUser()))
                     .andExpect(status().isInternalServerError())
                     .andExpect(jsonPath("$.type").value("https://api.example.com/problems/technical-failure-problem-detail"));
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return products sorted by price ascending")
+        void shouldReturnProductsSortedByPriceAscending() {
+            when(productClient.getAllProducts(30, 0, "price", "asc")).thenReturn(sampleProductsResponse);
+
+            mockMvc.perform(get("/api/products")
+                            .param("sortBy", "price")
+                            .param("order", "asc")
+                            .with(authenticatedUser()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.products").isArray());
+
+            verify(productClient, times(1)).getAllProducts(30, 0, "price", "asc");
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return products sorted by rating descending")
+        void shouldReturnProductsSortedByRatingDescending() {
+            when(productClient.getAllProducts(30, 0, "rating", "desc")).thenReturn(sampleProductsResponse);
+
+            mockMvc.perform(get("/api/products")
+                            .param("sortBy", "rating")
+                            .param("order", "desc")
+                            .with(authenticatedUser()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.products").isArray());
+
+            verify(productClient, times(1)).getAllProducts(30, 0, "rating", "desc");
+        }
+
+        @Test
+        @SneakyThrows
+        @DisplayName("Should return products with pagination and sorting combined")
+        void shouldReturnProductsWithPaginationAndSorting() {
+            ProductsResponse sortedPaginatedResponse = ProductsResponse.builder()
+                    .products(List.of(sampleProduct))
+                    .total(100)
+                    .skip(20)
+                    .limit(10)
+                    .build();
+
+            when(productClient.getAllProducts(10, 20, "title", "asc")).thenReturn(sortedPaginatedResponse);
+
+            mockMvc.perform(get("/api/products")
+                            .param("limit", "10")
+                            .param("skip", "20")
+                            .param("sortBy", "title")
+                            .param("order", "asc")
+                            .with(authenticatedUser()))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.skip").value(20))
+                    .andExpect(jsonPath("$.limit").value(10))
+                    .andExpect(jsonPath("$.total").value(100));
+
+            verify(productClient, times(1)).getAllProducts(10, 20, "title", "asc");
         }
     }
 

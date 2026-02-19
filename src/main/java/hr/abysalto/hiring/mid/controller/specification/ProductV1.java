@@ -19,7 +19,7 @@ public interface ProductV1 {
     @GetMapping
     @Operation(
             summary = "Get all products",
-            description = "Retrieves all products from the catalog with optional pagination"
+            description = "Retrieves all products from the catalog with optional pagination and sorting"
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -34,7 +34,11 @@ public interface ProductV1 {
             @Parameter(description = "Number of products to return")
             @RequestParam(required = false, defaultValue = "30") Integer limit,
             @Parameter(description = "Number of products to skip")
-            @RequestParam(required = false, defaultValue = "0") Integer skip
+            @RequestParam(required = false, defaultValue = "0") Integer skip,
+            @Parameter(description = "Field to sort by (e.g., 'title', 'price', 'rating')")
+            @RequestParam(required = false) String sortBy,
+            @Parameter(description = "Sort order ('asc' or 'desc')")
+            @RequestParam(required = false) String order
     );
 
     @GetMapping("/{productId}")

@@ -19,6 +19,14 @@ public interface ProductClient {
             @RequestParam("skip") Integer skip
     );
 
+    @GetExchange
+    ProductsResponse getAllProducts(
+            @RequestParam("limit") Integer limit,
+            @RequestParam("skip") Integer skip,
+            @RequestParam(value = "sortBy", required = false) String sortBy,
+            @RequestParam(value = "order", required = false) String order
+    );
+
     @GetExchange("/{productId}")
     ProductDto getProductById(@PathVariable Long productId);
 }

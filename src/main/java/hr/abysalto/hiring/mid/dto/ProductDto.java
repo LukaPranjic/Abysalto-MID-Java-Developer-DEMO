@@ -1,6 +1,5 @@
 package hr.abysalto.hiring.mid.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,6 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProductDto {
 
     private Long id;
@@ -42,7 +40,6 @@ public class ProductDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class DimensionsDto {
         private Double width;
         private Double height;
@@ -53,7 +50,6 @@ public class ProductDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ReviewDto {
         private Integer rating;
         private String comment;
@@ -66,7 +62,6 @@ public class ProductDto {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
-    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MetaDto {
         private String createdAt;
         private String updatedAt;

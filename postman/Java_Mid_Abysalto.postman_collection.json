@@ -286,7 +286,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/products?limit=30&skip=0",
+              "raw": "{{baseUrl}}/api/products?limit=30&skip=0&sortBy=price&order=asc",
               "host": ["{{baseUrl}}"],
               "path": ["api", "products"],
               "query": [
@@ -299,10 +299,20 @@
                   "key": "skip",
                   "value": "0",
                   "description": "Number of products to skip"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "price",
+                  "description": "Field to sort by (e.g., 'title', 'price', 'rating')"
+                },
+                {
+                  "key": "order",
+                  "value": "asc",
+                  "description": "Sort order ('asc' or 'desc')"
                 }
               ]
             },
-            "description": "Retrieves all products from the catalog with optional pagination"
+            "description": "Retrieves all products from the catalog with optional pagination and sorting"
           },
           "response": [
             {
@@ -311,7 +321,7 @@
                 "method": "GET",
                 "header": [],
                 "url": {
-                  "raw": "{{baseUrl}}/api/products?limit=30&skip=0",
+                  "raw": "{{baseUrl}}/api/products?limit=30&skip=0&sortBy=price&order=asc",
                   "host": ["{{baseUrl}}"],
                   "path": ["api", "products"],
                   "query": [
@@ -322,6 +332,14 @@
                     {
                       "key": "skip",
                       "value": "0"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "price"
+                    },
+                    {
+                      "key": "order",
+                      "value": "asc"
                     }
                   ]
                 }
@@ -336,6 +354,86 @@
                 }
               ],
               "body": "{\n  \"products\": [\n    {\n      \"id\": 1,\n      \"title\": \"iPhone 15\",\n      \"description\": \"Latest Apple smartphone\",\n      \"category\": \"smartphones\",\n      \"price\": 999.99,\n      \"discountPercentage\": 5.0,\n      \"rating\": 4.5,\n      \"stock\": 100,\n      \"brand\": \"Apple\",\n      \"thumbnail\": \"https://example.com/iphone15.jpg\"\n    }\n  ],\n  \"total\": 100,\n  \"skip\": 0,\n  \"limit\": 30\n}"
+            },
+            {
+              "name": "200 - Products sorted by price descending",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/products?limit=10&skip=0&sortBy=price&order=desc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "products"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "price"
+                    },
+                    {
+                      "key": "order",
+                      "value": "desc"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"products\": [\n    {\n      \"id\": 19,\n      \"title\": \"Premium Watch\",\n      \"description\": \"Luxury timepiece\",\n      \"category\": \"watches\",\n      \"price\": 2999.99,\n      \"discountPercentage\": 2.0,\n      \"rating\": 4.8,\n      \"stock\": 50,\n      \"brand\": \"Rolex\",\n      \"thumbnail\": \"https://example.com/watch.jpg\"\n    }\n  ],\n  \"total\": 100,\n  \"skip\": 0,\n  \"limit\": 10\n}"
+            },
+            {
+              "name": "200 - Products sorted by rating",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/products?limit=10&skip=0&sortBy=rating&order=desc",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "products"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "skip",
+                      "value": "0"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "rating"
+                    },
+                    {
+                      "key": "order",
+                      "value": "desc"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"products\": [\n    {\n      \"id\": 5,\n      \"title\": \"Top Rated Product\",\n      \"description\": \"Highly rated product\",\n      \"category\": \"electronics\",\n      \"price\": 499.99,\n      \"discountPercentage\": 10.0,\n      \"rating\": 4.95,\n      \"stock\": 200,\n      \"brand\": \"BestBrand\",\n      \"thumbnail\": \"https://example.com/toprated.jpg\"\n    }\n  ],\n  \"total\": 100,\n  \"skip\": 0,\n  \"limit\": 10\n}"
             }
           ]
         },
@@ -613,6 +711,251 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Cart",
+      "description": "User shopping cart management endpoints",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            },
+            "description": "Adds a product to the current user's shopping cart"
+          },
+          "response": [
+            {
+              "name": "201 - Product added to cart",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"productId\": 1,\n  \"quantity\": 2\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 1,\n  \"userId\": 1,\n  \"productId\": 1,\n  \"quantity\": 2,\n  \"message\": \"Product added to cart successfully\"\n}"
+            },
+            {
+              "name": "404 - Product not found",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"productId\": 999,\n  \"quantity\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json"
+                }
+              ],
+              "body": "{\n  \"type\": \"https://api.example.com/problems/product-not-found-problem-detail\",\n  \"title\": \"Product Not Found Problem Detail\",\n  \"status\": 404,\n  \"detail\": \"Product with id 999 not found\",\n  \"timestamp\": \"2026-02-19T12:00:00Z\"\n}"
+            },
+            {
+              "name": "409 - Product already in cart",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"productId\": 1,\n  \"quantity\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart"]
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json"
+                }
+              ],
+              "body": "{\n  \"type\": \"https://api.example.com/problems/cart-item-already-exists-problem-detail\",\n  \"title\": \"Cart Item Already Exists Problem Detail\",\n  \"status\": 409,\n  \"detail\": \"Product with id 1 is already in cart\",\n  \"timestamp\": \"2026-02-19T12:00:00Z\"\n}"
+            },
+            {
+              "name": "400 - Invalid quantity",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"productId\": 1,\n  \"quantity\": 0\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/problem+json"
+                }
+              ],
+              "body": "{\n    \"type\": \"https://api.example.com/problems/validation-failure-problem-detail\",\n    \"title\": \"Validation Failure Problem Detail\",\n    \"status\": 400,\n    \"detail\": \"Validation of the request failed. Check the violations for more information on the rejected property path, value, and for an expected value.\",\n    \"instance\": \"/api/cart\",\n    \"violations\": [\n        {\n            \"propertyPath\": \"quantity\",\n            \"rejectedValue\": \"0\",\n            \"message\": \"Quantity must be at least 1\"\n        }\n    ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get User Cart",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart"]
+            },
+            "description": "Retrieves all products in the current user's shopping cart"
+          },
+          "response": [
+            {
+              "name": "200 - Cart retrieved successfully",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"product\": {\n        \"id\": 1,\n        \"title\": \"iPhone 15\",\n        \"description\": \"Latest Apple smartphone\",\n        \"category\": \"smartphones\",\n        \"price\": 999.99,\n        \"brand\": \"Apple\",\n        \"thumbnail\": \"https://example.com/iphone15.jpg\"\n      },\n      \"quantity\": 2\n    }\n  ],\n  \"totalItems\": 2,\n  \"totalPrice\": 1999.98\n}"
+            },
+            {
+              "name": "200 - Empty cart",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [],\n  \"totalItems\": 0,\n  \"totalPrice\": 0.0\n}"
+            }
+          ]
+        },
+        {
+          "name": "Remove from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cart/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "cart", "1"]
+            },
+            "description": "Removes a product from the current user's shopping cart"
+          },
+          "response": [
+            {
+              "name": "204 - Product removed from cart",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/cart/1",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "cart", "1"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
     }
   ],
   "auth": {
@@ -626,4 +969,3 @@
     ]
   }
 }
-
