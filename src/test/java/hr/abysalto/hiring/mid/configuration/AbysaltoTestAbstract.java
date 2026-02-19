@@ -40,7 +40,7 @@ public abstract class AbysaltoTestAbstract {
     @MockitoBean
     protected ProductClient productClient;
 
-    @Autowired
+    @MockitoSpyBean
     protected FavouriteRepository favouriteRepository;
 
     @MockitoSpyBean

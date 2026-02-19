@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerDbUnavailableTest extends AbysaltoTestAbstract {
 
     @Nested
-    @DisplayName("POST /api/auth/register - DB Unavailable")
+    @DisplayName("POST /api/auth/register")
     class RegisterDbUnavailableTests {
 
         @Test
@@ -70,7 +70,7 @@ class AuthControllerDbUnavailableTest extends AbysaltoTestAbstract {
     }
 
     @Nested
-    @DisplayName("POST /api/auth/login - DB Unavailable")
+    @DisplayName("POST /api/auth/login")
     class LoginDbUnavailableTests {
 
         @Test
